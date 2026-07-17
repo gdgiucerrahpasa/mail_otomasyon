@@ -1,12 +1,12 @@
 {
   "google_sheets": {
-    "spreadsheet_id": "1Z_zj6KQGDSo5F6vINh-tYdU4jTw4BRYzPUdU_ZOSop4",
+    "spreadsheet_id": "1CIUa0u8ulUepvQfbLgZkdUIptMBZvCZ9CzFt2qO1-H8",
     "credentials_file": "credentials.json",
     "token_file": "token.json"
   },
   "sheet_names": {
     "senders": "Kişi Bilgileri",
-    "recipients": "datalar"
+    "recipients": "Case Study"
   },
   "sender_columns": {
     "name": "Gönderen Kişi",
@@ -18,7 +18,7 @@
   "recipient_columns": {
     "name": "Kişi İsmi",
     "company": "Şirket",
-    "position": "Pozisyon",
+    "position": "Title",
     "email": "İletişim Bilgisi",
     "last_date": "Son Mail Tarihi",
     "mail_count": "Mail Durumu",

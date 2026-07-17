@@ -5,7 +5,6 @@ config.py — Yapılandırma yükleme ve kaydetme
 import json
 import os
 
-import os.
 import logging
 import dotenv
 
