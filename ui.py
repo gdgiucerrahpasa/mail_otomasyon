@@ -270,6 +270,13 @@ class App(tk.Tk):
                    command=self._save_columns).grid(
             row=3, column=0, columnspan=4, pady=14, padx=10, sticky="w")
 
+    def _build_placeholder_hint(self) -> str:
+        rc = self.config_data["recipient_columns"]
+        sc = self.config_data["sender_columns"]
+        vars_ = [rc["name"], rc["company"], rc["position"], rc["entered_by"], sc["title"]]
+        placeholders = "  ".join(f"[{v}]" for v in vars_ if v)
+        return f"Yer tutucular: {placeholders}\nİmza resmi CID ile otomatik embed edilir."
+
     def _save_columns(self):
         rc = self.config_data["recipient_columns"]
         rc["name"]        = self._rc_name.get()
@@ -291,6 +298,10 @@ class App(tk.Tk):
         sc["signature"] = self._sc_signature.get()
 
         cfg.save_config(self.config_data)
+
+        if hasattr(self, "_lbl_placeholder_hint"):
+            self._lbl_placeholder_hint.config(text=self._build_placeholder_hint())
+
         messagebox.showinfo("Kaydedildi", "Sütun isimleri kaydedildi.")
 
     # ── Sekme 3: Şablonlar ───────────────────────────────────────────────────
@@ -303,10 +314,10 @@ class App(tk.Tk):
                   font=("Segoe UI", 13, "bold"), foreground=ACCENT).grid(
             row=0, column=0, columnspan=2, pady=(10, 4), sticky="w", padx=10)
 
-        hint = ("Yer tutucular: [Kişi Adı]  [Şirket Adı]  [Pozisyon]  "
-                "[Datayı Giren]  [Ünvan]\n"
-                "İmza resmi CID ile otomatik embed edilir.")
-        ttk.Label(f, text=hint, foreground=SUBTEXT, font=("Segoe UI", 8)).grid(
+        self._lbl_placeholder_hint = ttk.Label(
+            f, text=self._build_placeholder_hint(),
+            foreground=SUBTEXT, font=("Segoe UI", 8))
+        self._lbl_placeholder_hint.grid(
             row=1, column=0, columnspan=2, sticky="w", padx=10, pady=(0, 10))
 
         # Konu

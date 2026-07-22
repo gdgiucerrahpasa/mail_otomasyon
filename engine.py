@@ -207,13 +207,13 @@ def run_bulk_send(config: dict, service, log_callback=None) -> SendResult:
             result.skipped += 1
             continue
 
-        # --- Placeholders ---
+        # --- Placeholders — keys match configured Sheets column names ---
         placeholders = {
-            "Kişi Adı":     recipient_name,
-            "Şirket Adı":   company,
-            "Pozisyon":     position,
-            "Datayı Giren": sender_info["name"],
-            "Ünvan":        sender_info["title"],
+            recipient_cols["name"]:       recipient_name,
+            recipient_cols["company"]:    company,
+            recipient_cols["position"]:   position,
+            recipient_cols["entered_by"]: sender_info["name"],
+            sender_cols["title"]:         sender_info["title"],
         }
 
         # --- İmza indir ---

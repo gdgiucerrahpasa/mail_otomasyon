@@ -48,11 +48,11 @@ DEFAULT_CONFIG = {
         "bcc": [],
         "attachments": [],
         "templates": {
-            "template_1": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket Adı] için yazıyorum...</p>\n\n<p>Saygılarımla,</p>",
-            "template_2": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket Adı] hakkında...</p>\n\n<p>Saygılarımla,</p>",
-            "template_3": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket Adı] ile iş birliği...</p>\n\n<p>Saygılarımla,</p>",
-            "template_4": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket Adı] için bir fırsat...</p>\n\n<p>Saygılarımla,</p>",
-            "reminder":   "<p>Merhaba [Kişi Adı],</p>\n\n<p>Daha önce [Şirket Adı]'na gönderdiğim maili hatırlatmak istedim.</p>\n\n<p>Saygılarımla,</p>"
+            "template_1": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket] için yazıyorum...</p>\n\n<p>Saygılarımla,</p>",
+            "template_2": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket] hakkında...</p>\n\n<p>Saygılarımla,</p>",
+            "template_3": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket] ile iş birliği...</p>\n\n<p>Saygılarımla,</p>",
+            "template_4": "<p>Merhaba [Kişi Adı],</p>\n\n<p>[Şirket] için bir fırsat...</p>\n\n<p>Saygılarımla,</p>",
+            "reminder":   "<p>Merhaba [Kişi Adı],</p>\n\n<p>Daha önce [Şirket]'e gönderdiğim maili hatırlatmak istedim.</p>\n\n<p>Saygılarımla,</p>"
         }
     },
     "settings": {
