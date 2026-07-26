@@ -1,0 +1,15 @@
+[Unit]
+Description=GDG Mail Otomasyon Web
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/gdg_mail_web
+EnvironmentFile=/var/www/gdg_mail_web/.env
+ExecStart=/var/www/gdg_mail_web/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001 --workers 1
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

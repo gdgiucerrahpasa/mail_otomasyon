@@ -1,12 +1,8 @@
-"""
-gmail_sender.py — SMTP ile mail gönderimi
-  - CID ile imza resmi embed
-  - In-Reply-To / References header ile gerçek reply
-  - Ek dosya desteği
-"""
+"""SMTP mail sending — ported unchanged from gmail_sender.py."""
 
 import logging
 import smtplib
+import time
 import urllib.request
 import re
 from email import utils as email_utils
@@ -15,7 +11,6 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.base import MIMEBase
 from email import encoders
-from datetime import datetime
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -24,19 +19,12 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
 
-def _download_image(drive_link: str) -> Optional[bytes]:
-    """
-    Drive doğrudan indirme linkinden resim byte'larını indirir.
-    Link formatı: https://drive.usercontent.google.com/download?id=FILE_ID
-    ya da sadece FILE_ID olabilir.
-    """
+def download_image(drive_link: str) -> Optional[bytes]:
     try:
-        # Eğer sadece ID geldiyse linke çevir
         if not drive_link.startswith("http"):
             url = f"https://drive.usercontent.google.com/download?id={drive_link.strip()}&export=download"
         else:
             url = drive_link.strip()
-
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = resp.read()
@@ -48,10 +36,6 @@ def _download_image(drive_link: str) -> Optional[bytes]:
 
 
 def _fill_template(template: str, placeholders: dict) -> str:
-    """
-    [Anahtar] formatındaki yer tutucuları doldurur.
-    placeholders: {"Kişi Adı": "Ahmet", "Şirket Adı": "XYZ A.Ş.", ...}
-    """
     result = template
     for key, value in placeholders.items():
         result = result.replace(f"[{key}]", str(value) if value else "")
@@ -62,27 +46,14 @@ def build_html_body(
     template: str,
     placeholders: dict,
     signature_data: Optional[bytes],
-    cid: str = "signature_img"
+    cid: str = "signature_img",
 ) -> tuple[str, Optional[bytes]]:
-    """
-    HTML body'yi oluşturur.
-    Eğer imza resmi varsa:
-      - Şablondaki [İmza] ya da <img src="..."> tag'ini CID referansıyla değiştirir
-      - (signature_data, cid) çiftini embed için döner
-    Döner: (html_string, signature_bytes_or_None)
-    """
     filled = _fill_template(template, placeholders)
-
     if signature_data:
-        # Eğer template'de src="...drive..." gibi bir link varsa CID ile değiştir
-        filled = re.sub(
-            r'src="https://drive[^"]*"',
-            f'src="cid:{cid}"',
-            filled
-        )
-        # Eğer [İmza] kaldıysa (kullanıcı farklı yazdıysa)
+        filled = re.sub(r'src="https://drive[^"]*"', f'src="cid:{cid}"', filled)
         filled = filled.replace("[İmza]", f'<img src="cid:{cid}" style="width:420px;height:210px;">')
-
+        if f"cid:{cid}" not in filled:
+            filled += f'<br><img src="cid:{cid}" style="width:420px;height:210px;">'
     return filled, signature_data
 
 
@@ -96,13 +67,9 @@ def send_mail(
     cc: list = None,
     bcc: list = None,
     attachments: list = None,
-    reply_to_message_id: Optional[str] = None,  # In-Reply-To header
-    custom_message_id: Optional[str] = None
+    reply_to_message_id: Optional[str] = None,
+    custom_message_id: Optional[str] = None,
 ) -> tuple[bool, str]:
-    """
-    Maili gönderir.
-    Döner: (başarı_bool, message_id_str)
-    """
     try:
         msg = MIMEMultipart("related")
         msg["From"] = sender_email
@@ -120,23 +87,19 @@ def send_mail(
             display_subject = subject
 
         msg["Subject"] = display_subject
-
         if cc:
             msg["Cc"] = ", ".join(cc)
 
-        # HTML alternatif
         alternative = MIMEMultipart("alternative")
         alternative.attach(MIMEText(html_body, "html", "utf-8"))
         msg.attach(alternative)
 
-        # CID imza embed
         if signature_data:
             img = MIMEImage(signature_data)
             img.add_header("Content-ID", "<signature_img>")
-            img.add_header("Content-Disposition", "inline", filename="signature.png")
+            img.add_header("Content-Disposition", "inline")
             msg.attach(img)
 
-        # Ek dosyalar (sadece ilk mailde)
         if attachments and not is_reply:
             import os
             for path in attachments:
@@ -147,13 +110,12 @@ def send_mail(
                     encoders.encode_base64(part)
                     part.add_header(
                         "Content-Disposition",
-                        f"attachment; filename=\"{os.path.basename(path)}\""
+                        f'attachment; filename="{os.path.basename(path)}"',
                     )
                     msg.attach(part)
                 else:
                     logger.warning(f"Ek dosya bulunamadı: {path}")
 
-        # Alıcı listesi
         recipients = [to_email]
         if cc:
             recipients.extend(cc)
@@ -165,9 +127,45 @@ def send_mail(
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, recipients, msg.as_string())
 
-        logger.info(f"Mail gönderildi → {to_email} | Reply: {is_reply} | ID: {new_message_id}")
+        logger.info(f"Mail gönderildi → {to_email} | Reply: {is_reply}")
         return True, new_message_id
 
     except Exception as e:
         logger.error(f"Mail gönderilemedi ({to_email}): {e}")
         return False, ""
+
+
+def fetch_actual_sent_message_id(
+    sender_email: str,
+    sender_password: str,
+    to_email: str,
+    delay_secs: int = 2,
+) -> str:
+    """Fetch the real Message-ID Gmail assigned to the sent email via IMAP.
+
+    Gmail SMTP replaces the custom Message-ID header with its own. Without the
+    real ID, In-Reply-To headers in reminders point to a non-existent message
+    and threading breaks. This reads the actual ID from [Gmail]/Sent Mail.
+    """
+    import imaplib
+    import email as email_lib
+    time.sleep(delay_secs)  # give Gmail time to add the message to Sent Mail
+    try:
+        with imaplib.IMAP4_SSL("imap.gmail.com") as imap:
+            imap.login(sender_email, sender_password)
+            imap.select('"[Gmail]/Sent Mail"')
+            _, data = imap.search(None, f'TO "{to_email}"')
+            if data and data[0]:
+                nums = data[0].split()
+                _, msg_data = imap.fetch(nums[-1], "(BODY[HEADER.FIELDS (MESSAGE-ID)])")
+                raw = msg_data[0][1]
+                if isinstance(raw, bytes):
+                    raw = raw.decode("utf-8", errors="replace")
+                parsed = email_lib.message_from_string(raw)
+                msg_id = parsed.get("Message-ID", "").strip()
+                if msg_id:
+                    logger.info(f"Gerçek Message-ID alındı ({to_email}): {msg_id}")
+                    return msg_id
+    except Exception as e:
+        logger.warning(f"IMAP Message-ID alınamadı ({to_email}): {e}")
+    return ""

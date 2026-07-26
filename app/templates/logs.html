@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Loglar — GDG Mail Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+  <h1 class="text-2xl font-bold text-text">📋 Gönderim Logları</h1>
+
+  <!-- Filters -->
+  <form method="get" action="/logs" class="flex flex-wrap gap-3 items-end">
+    <div>
+      <label class="block text-xs text-subtext0 mb-1">Çalışma</label>
+      <select name="run_id"
+              class="bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        <option value="0">Tümü</option>
+        {% for run in runs %}
+        <option value="{{ run.id }}" {% if filter_run == run.id %}selected{% endif %}>
+          Run #{{ run.id }} — {{ run.started_at.strftime('%d.%m %H:%M') }} ({{ run.status }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs text-subtext0 mb-1">Seviye</label>
+      <select name="level"
+              class="bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        <option value="">Tümü</option>
+        <option value="INFO"    {% if filter_level == 'INFO' %}selected{% endif %}>INFO</option>
+        <option value="WARNING" {% if filter_level == 'WARNING' %}selected{% endif %}>WARNING</option>
+        <option value="ERROR"   {% if filter_level == 'ERROR' %}selected{% endif %}>ERROR</option>
+      </select>
+    </div>
+    <button type="submit"
+            class="px-4 py-2 bg-blue text-mantle font-semibold rounded-lg text-sm hover:opacity-90 transition">
+      Filtrele
+    </button>
+    <a href="/logs" class="px-4 py-2 bg-surface0 text-text rounded-lg text-sm hover:bg-surface1 transition">
+      Temizle
+    </a>
+    <span class="text-xs text-overlay0 ml-auto self-center">{{ total }} kayıt</span>
+  </form>
+
+  <!-- Log table -->
+  <div class="bg-mantle rounded-xl overflow-hidden">
+    <div class="font-mono text-xs divide-y divide-surface0">
+      {% for entry in entries %}
+      <div class="flex gap-4 px-5 py-2 hover:bg-surface0 transition
+        {% if entry.level == 'ERROR' %}log-err
+        {% elif entry.level == 'WARNING' %}log-warn
+        {% else %}log-info{% endif %}">
+        <span class="text-overlay0 shrink-0 w-32">{{ entry.timestamp.strftime('%d.%m %H:%M:%S') }}</span>
+        <span class="shrink-0 w-20">
+          {% if entry.run_id %}
+          <a href="/logs?run_id={{ entry.run_id }}" class="hover:underline">#{{ entry.run_id }}</a>
+          {% endif %}
+        </span>
+        <span class="shrink-0 w-16">{{ entry.level }}</span>
+        <span class="flex-1 whitespace-pre-wrap break-words">{{ entry.message }}</span>
+      </div>
+      {% else %}
+      <div class="px-5 py-10 text-center text-overlay0">Log kaydı bulunamadı.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="flex gap-2 items-center justify-center">
+    {% if page > 1 %}
+    <a href="/logs?run_id={{ filter_run }}&level={{ filter_level }}&page={{ page - 1 }}"
+       class="px-3 py-1.5 bg-surface0 text-text rounded-lg text-sm hover:bg-surface1">← Önceki</a>
+    {% endif %}
+    <span class="text-xs text-overlay0">{{ page }} / {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="/logs?run_id={{ filter_run }}&level={{ filter_level }}&page={{ page + 1 }}"
+       class="px-3 py-1.5 bg-surface0 text-text rounded-lg text-sm hover:bg-surface1">Sonraki →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

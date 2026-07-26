@@ -1,4 +1,8 @@
-credentials.json
-mail_otomasyon.log
-token.json
+venv/
+__pycache__/
+*.pyc
 .env
+*.db
+credentials.json
+token.json
+.DS_Store

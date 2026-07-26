@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Ayarlar — GDG Mail Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8">
+
+  <h1 class="text-2xl font-bold text-text">⚙️ Ayarlar</h1>
+
+  {% if saved %}
+  <div class="bg-surface0 border border-green rounded-xl px-4 py-3 text-green text-sm">
+    ✅ Ayarlar kaydedildi.
+  </div>
+  {% endif %}
+
+  <form method="post" action="/settings" class="space-y-8">
+
+    <!-- Google Sheets -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">🔗 Google Sheets Bağlantısı</h2>
+      <div>
+        <label class="block text-xs text-subtext0 mb-1.5">Spreadsheet ID *</label>
+        <input type="text" name="spreadsheet_id" value="{{ cfg.get('spreadsheet_id','') }}"
+               class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">credentials.json yolu</label>
+          <input type="text" name="credentials_file" value="{{ cfg.get('credentials_file','credentials.json') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">token.json yolu</label>
+          <input type="text" name="token_file" value="{{ cfg.get('token_file','token.json') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
+        </div>
+      </div>
+      <div>
+        <button type="button"
+                hx-post="/settings/test-connection"
+                hx-target="#conn-result"
+                class="px-4 py-2 bg-surface0 hover:bg-surface1 text-text rounded-lg text-sm transition">
+          🔌 Bağlantıyı Test Et
+        </button>
+        <span id="conn-result" class="ml-3 text-sm"></span>
+      </div>
+    </section>
+
+    <!-- Sheet Names -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">📊 Sayfa İsimleri</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Gönderenler Sayfası</label>
+          <input type="text" name="sheet_senders" value="{{ cfg.get('sheet_senders','Kişi Bilgileri') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Alıcılar Sayfası</label>
+          <input type="text" name="sheet_recipients" value="{{ cfg.get('sheet_recipients','Alıcı Listesi') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+      </div>
+    </section>
+
+    <!-- Recipient Columns -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">📋 Alıcı Sütun Adları</h2>
+      <div class="grid grid-cols-2 gap-4">
+        {% set rec_cols = [
+          ('col_recipient_name','Kişi Adı sütunu','col_recipient_name'),
+          ('col_recipient_company','Şirket sütunu','col_recipient_company'),
+          ('col_recipient_position','Pozisyon sütunu','col_recipient_position'),
+          ('col_recipient_email','E-posta sütunu','col_recipient_email'),
+          ('col_recipient_last_date','Son Mail Tarihi sütunu','col_recipient_last_date'),
+          ('col_recipient_mail_count','Mail Sayısı sütunu','col_recipient_mail_count'),
+          ('col_recipient_message_id','Message-ID sütunu','col_recipient_message_id'),
+          ('col_recipient_entered_by','Datayı Giren sütunu','col_recipient_entered_by'),
+          ('col_recipient_response','Dönüş Durumu sütunu','col_recipient_response'),
+          ('col_recipient_segment','Segment sütunu','col_recipient_segment'),
+        ] %}
+        {% for key, label, cfgkey in rec_cols %}
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">{{ label }}</label>
+          <input type="text" name="{{ key }}" value="{{ cfg.get(cfgkey, '') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Sender Columns -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">👤 Gönderen Sütun Adları</h2>
+      <div class="grid grid-cols-2 gap-4">
+        {% set snd_cols = [
+          ('col_sender_name','İsim sütunu'),
+          ('col_sender_title','Ünvan sütunu'),
+          ('col_sender_email','Gmail sütunu'),
+          ('col_sender_password','App Password sütunu'),
+          ('col_sender_signature','İmza Linki sütunu'),
+        ] %}
+        {% for key, label in snd_cols %}
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">{{ label }}</label>
+          <input type="text" name="{{ key }}" value="{{ cfg.get(key, '') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Email Defaults -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">📧 Varsayılan CC / BCC</h2>
+      <p class="text-xs text-subtext0">Bu değerler her taslağın CC/BCC'siyle birleştirilir.</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Global CC</label>
+          <input type="text" name="email_cc" value="{{ cfg.get('email_cc','') }}"
+                 placeholder="ornek@gmail.com"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Global BCC</label>
+          <input type="text" name="email_bcc" value="{{ cfg.get('email_bcc','') }}"
+                 placeholder="gdgcorganizasyon@gmail.com"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+      </div>
+    </section>
+
+    <!-- Send Settings -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">⚙️ Gönderim Ayarları</h2>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Gönderici değişince bekleme (sn)</label>
+          <input type="number" name="wait_seconds_between_senders" value="{{ cfg.get('wait_seconds_between_senders','180') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Hatırlatma için bekleme (gün)</label>
+          <input type="number" name="reminder_after_days" value="{{ cfg.get('reminder_after_days','3') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Çalışma başına max mail</label>
+          <input type="number" name="max_mails_per_run" value="{{ cfg.get('max_mails_per_run','50') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+      </div>
+    </section>
+
+    <!-- Scheduler -->
+    <section class="bg-mantle rounded-xl p-6 space-y-4">
+      <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">🕐 Otomatik Zamanlayıcı</h2>
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" name="schedule_enabled" value="true"
+                 {% if cfg.get('schedule_enabled') == 'true' %}checked{% endif %}
+                 class="w-4 h-4 rounded accent-blue">
+          <span class="text-sm text-text">Otomatik çalışmayı etkinleştir</span>
+        </label>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-subtext0">Her</span>
+          <input type="number" name="schedule_interval_hours" value="{{ cfg.get('schedule_interval_hours','6') }}"
+                 min="1" max="168"
+                 class="w-16 bg-surface0 border border-surface1 text-text rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-blue">
+          <span class="text-xs text-subtext0">saatte bir</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex gap-3">
+      <button type="submit"
+              class="px-6 py-2.5 bg-blue text-mantle font-semibold rounded-xl hover:opacity-90 transition text-sm">
+        💾 Kaydet
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

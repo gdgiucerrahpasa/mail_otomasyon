@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — GDG Mail Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+  <div class="flex items-center gap-4">
+    <a href="/drafts" class="text-overlay0 hover:text-text text-sm">← Taslaklar</a>
+    <h1 class="text-2xl font-bold text-text">{{ title }}</h1>
+  </div>
+
+  <form method="post" action="{{ action }}" class="space-y-5">
+
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Name -->
+      <div class="col-span-2 md:col-span-1">
+        <label class="block text-xs font-medium text-subtext0 mb-1.5">Taslak Adı *</label>
+        <input type="text" name="name" required
+               value="{{ draft.name if draft else '' }}"
+               placeholder="Ideathon İlk Mail"
+               class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+      </div>
+
+      <!-- Slug -->
+      <div class="col-span-2 md:col-span-1">
+        <label class="block text-xs font-medium text-subtext0 mb-1.5">
+          Slug * <span class="text-overlay0 font-normal">(Sheet'teki Segment değeriyle eşleşir)</span>
+        </label>
+        <input type="text" name="slug" required
+               value="{{ draft.slug if draft else '' }}"
+               placeholder="ideathon"
+               class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
+        <p class="text-xs text-overlay0 mt-1">Küçük harf, boşluksuz. Büyük/küçük harf fark etmez.</p>
+      </div>
+    </div>
+
+    <!-- Type -->
+    <div>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" name="is_reminder" value="1"
+               {% if draft and draft.is_reminder %}checked{% endif %}
+               class="w-4 h-4 rounded accent-yellow">
+        <span class="text-sm text-text">Bu bir <strong class="text-yellow">hatırlatma</strong> taslağıdır
+          <span class="text-overlay0 font-normal">(reminder)</span>
+        </span>
+      </label>
+      <p class="text-xs text-overlay0 mt-1 ml-7">İşaretsiz = ilk mail. Her segment için biri ilk mail, biri hatırlatma olmak üzere iki taslak oluşturun.</p>
+    </div>
+
+    <!-- Subject -->
+    <div>
+      <label class="block text-xs font-medium text-subtext0 mb-1.5">E-posta Konusu *</label>
+      <input type="text" name="subject" required
+             value="{{ draft.subject if draft else '' }}"
+             placeholder="GDG Ideathon 2025 — Sponsorluk Talebi"
+             class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+      <p class="text-xs text-overlay0 mt-1">Hatırlatmada otomatik olarak "Re: " eklenir.</p>
+    </div>
+
+    <!-- Body -->
+    <div>
+      <label class="block text-xs font-medium text-subtext0 mb-1.5">
+        HTML Gövde *
+        <span class="text-overlay0 font-normal">— Yer tutucular: [Kişi Adı] [Şirket Adı] [Pozisyon] [Datayı Giren] [Ünvan] [İmza]</span>
+      </label>
+      <textarea name="body_html" required rows="16"
+                placeholder="<p>Merhaba [Kişi Adı],</p>&#10;&#10;<p>[Şirket Adı] adına yazıyorum...</p>"
+                class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue resize-y">{{ draft.body_html if draft else '' }}</textarea>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <!-- CC -->
+      <div>
+        <label class="block text-xs font-medium text-subtext0 mb-1.5">CC <span class="text-overlay0 font-normal">(virgülle ayırın)</span></label>
+        <input type="text" name="cc"
+               value="{{ draft.cc if draft else '' }}"
+               placeholder="ornek@gmail.com, diger@gmail.com"
+               class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+      </div>
+      <!-- BCC -->
+      <div>
+        <label class="block text-xs font-medium text-subtext0 mb-1.5">BCC <span class="text-overlay0 font-normal">(virgülle ayırın)</span></label>
+        <input type="text" name="bcc"
+               value="{{ draft.bcc if draft else '' }}"
+               placeholder="gizli@gmail.com"
+               class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+      </div>
+    </div>
+
+    <!-- Attachments -->
+    <div>
+      <label class="block text-xs font-medium text-subtext0 mb-1.5">Ek Dosyalar <span class="text-overlay0 font-normal">(tam dosya yolları, virgülle ayırın)</span></label>
+      <input type="text" name="attachments"
+             value="{{ draft.attachments if draft else '' }}"
+             placeholder="/srv/app/files/brosur.pdf, /srv/app/files/sponsorluk.pdf"
+             class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
+      <p class="text-xs text-overlay0 mt-1">Sadece ilk mailte eklenir, hatırlatmalarda eklenmez.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 pt-2">
+      <button type="submit"
+              class="px-6 py-2.5 bg-blue text-mantle font-semibold rounded-xl hover:opacity-90 transition text-sm">
+        💾 Kaydet
+      </button>
+      <a href="/drafts"
+         class="px-6 py-2.5 bg-surface0 text-text rounded-xl hover:bg-surface1 transition text-sm">
+        İptal
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

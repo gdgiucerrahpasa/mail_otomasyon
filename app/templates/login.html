@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Giriş — GDG Mail Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: {
+        base: '#1e1e2e', mantle: '#181825', surface0: '#313244',
+        text: '#cdd6f4', blue: '#89b4fa', red: '#f38ba8', mauve: '#cba6f7',
+        overlay0: '#6c7086',
+      }}}
+    }
+  </script>
+  <style>body { background-color: #1e1e2e; color: #cdd6f4; }</style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="bg-mantle rounded-2xl p-10 w-full max-w-sm shadow-2xl text-center">
+    <div class="text-4xl mb-4">✉️</div>
+    <h1 class="text-2xl font-bold text-text mb-2">GDG Mail Admin</h1>
+    <p class="text-sm text-overlay0 mb-8">Yalnızca yetkili adminler erişebilir.</p>
+
+    {% if error == 'wrong_credentials' %}
+    <p class="text-red text-sm mb-4 bg-surface0 rounded-lg px-3 py-2">
+      ❌ Kullanıcı adı veya şifre hatalı.
+    </p>
+    {% endif %}
+
+    <form method="post" action="/login" class="space-y-4 text-left">
+      <div>
+        <label class="block text-sm text-overlay0 mb-1">Kullanıcı Adı</label>
+        <input
+          type="text"
+          name="username"
+          autocomplete="username"
+          required
+          class="w-full bg-surface0 text-text rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue"
+        />
+      </div>
+      <div>
+        <label class="block text-sm text-overlay0 mb-1">Şifre</label>
+        <input
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          required
+          class="w-full bg-surface0 text-text rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue"
+        />
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue hover:opacity-90 text-mantle font-semibold py-3 px-4 rounded-xl transition"
+      >
+        Giriş Yap
+      </button>
+    </form>
+  </div>
+</body>
+</html>

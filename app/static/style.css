@@ -1,0 +1,12 @@
+/* Extra styles beyond Tailwind — kept minimal */
+.log-ok   { color: #a6e3a1; }
+.log-err  { color: #f38ba8; }
+.log-warn { color: #f9e2af; }
+.log-info { color: #89b4fa; }
+
+/* Fade in for new HTMX-appended log lines */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.htmx-added { animation: fadeIn 0.15s ease; }

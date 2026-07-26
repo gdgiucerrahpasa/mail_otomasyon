@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — GDG Mail Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-text">🚀 Dashboard</h1>
+    <div class="flex gap-3">
+      {% if is_running %}
+      <form method="post" action="/run/stop">
+        <button class="px-4 py-2 bg-red text-mantle font-semibold rounded-xl hover:opacity-90 transition text-sm">
+          ⛔ Durdur
+        </button>
+      </form>
+      {% else %}
+      <form method="post" action="/run/start">
+        <button class="px-4 py-2 bg-green text-mantle font-semibold rounded-xl hover:opacity-90 transition text-sm">
+          ▶ Şimdi Çalıştır
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="bg-surface0 rounded-xl px-5 py-4 flex items-center gap-4">
+    {% if is_running %}
+    <span class="w-3 h-3 rounded-full bg-green animate-pulse"></span>
+    <span class="text-green font-medium text-sm">Gönderim çalışıyor — Run #{{ current_run_id }}</span>
+    {% else %}
+    <span class="w-3 h-3 rounded-full bg-overlay0"></span>
+    <span class="text-subtext0 text-sm">Beklemede</span>
+    {% endif %}
+  </div>
+
+  <!-- Live log (only shown when running) -->
+  {% if is_running %}
+  <div class="bg-mantle rounded-xl p-5">
+    <h2 class="text-sm font-semibold text-subtext0 mb-3 uppercase tracking-wide">Canlı Log</h2>
+    <div id="live-log"
+         class="font-mono text-xs space-y-0.5 max-h-80 overflow-y-auto">
+    </div>
+    <!-- Poller: replaced each tick with updated after_id -->
+    <div id="log-poller"
+         hx-get="/run/status?after_id=0"
+         hx-trigger="load"
+         hx-swap="outerHTML"
+         hx-target="#log-poller">
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent runs -->
+  <div>
+    <h2 class="text-lg font-semibold text-text mb-4">Son Çalışmalar</h2>
+    {% if runs %}
+    <div class="space-y-3">
+      {% for run in runs %}
+      <div class="bg-surface0 rounded-xl px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          {% if run.status == 'completed' %}
+            <span class="text-green text-lg">✅</span>
+          {% elif run.status == 'running' %}
+            <span class="text-blue text-lg animate-pulse">⏳</span>
+          {% elif run.status == 'failed' %}
+            <span class="text-red text-lg">❌</span>
+          {% elif run.status == 'stopped' %}
+            <span class="text-yellow text-lg">⛔</span>
+          {% else %}
+            <span class="text-overlay0 text-lg">○</span>
+          {% endif %}
+          <div>
+            <p class="text-sm font-medium text-text">Run #{{ run.id }}</p>
+            <p class="text-xs text-overlay0">
+              {{ run.started_at.strftime('%d.%m.%Y %H:%M') }}
+              {% if run.finished_at %}
+              — {{ run.finished_at.strftime('%H:%M') }}
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-4 text-xs">
+          <span class="text-green">📧 {{ run.sent }}</span>
+          <span class="text-blue">🔔 {{ run.reminded }}</span>
+          <span class="text-overlay0">⏭ {{ run.skipped }}</span>
+          <span class="text-red">❌ {{ run.failed }}</span>
+          <span class="text-yellow">✅ {{ run.responded }}</span>
+          <a href="/logs?run_id={{ run.id }}" class="text-lavender hover:underline ml-2">Loglar →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-overlay0 text-sm">Henüz çalışma yok. "Şimdi Çalıştır" butonuna tıklayın.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

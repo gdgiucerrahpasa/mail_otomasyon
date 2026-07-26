@@ -1,0 +1,20 @@
+{% for entry in new_entries %}
+<div class="py-0.5
+  {% if entry.level == 'ERROR' %}log-err
+  {% elif entry.level == 'WARNING' %}log-warn
+  {% elif entry.level == 'INFO' %}log-info
+  {% else %}text-text{% endif %}"
+  hx-swap-oob="beforeend:#live-log">
+  <span class="text-overlay0">{{ entry.timestamp.strftime('%H:%M:%S') }}</span>
+  {{ entry.message }}
+</div>
+{% endfor %}
+
+{% if is_running %}
+<div id="log-poller"
+     hx-get="/run/status?after_id={{ last_id }}"
+     hx-trigger="load delay:3s"
+     hx-swap="outerHTML"
+     hx-target="#log-poller">
+</div>
+{% endif %}

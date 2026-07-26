@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Taslaklar — GDG Mail Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-text">✉️ Mail Taslakları</h1>
+    <a href="/drafts/new"
+       class="px-4 py-2 bg-blue text-mantle font-semibold rounded-xl hover:opacity-90 transition text-sm">
+      + Yeni Taslak
+    </a>
+  </div>
+
+  <div class="bg-surface0 rounded-xl p-4 text-xs text-subtext0">
+    <strong class="text-text">Nasıl çalışır:</strong>
+    Her segment için bir "İlk Mail" ve bir "Hatırlatma" taslağı oluşturun.
+    Google Sheet'teki <code class="bg-mantle px-1 rounded">Segment</code> sütununda yazılan değer
+    (büyük/küçük harf fark etmez), taslağın <strong>Slug</strong> alanıyla eşleşir.
+  </div>
+
+  {% if drafts %}
+  <!-- Group by slug -->
+  {% set slugs = drafts | map(attribute='slug') | unique | list %}
+  {% for slug in slugs %}
+  {% set slug_drafts = drafts | selectattr('slug', 'equalto', slug) | list %}
+  <div class="bg-mantle rounded-xl overflow-hidden">
+    <div class="px-5 py-3 bg-surface0 flex items-center gap-2">
+      <span class="text-mauve font-mono text-sm font-bold">{{ slug }}</span>
+      <span class="text-overlay0 text-xs">({{ slug_drafts | length }} taslak)</span>
+    </div>
+    {% for draft in slug_drafts %}
+    <div class="px-5 py-4 border-t border-surface0 flex items-center justify-between gap-4">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-sm font-medium text-text">{{ draft.name }}</span>
+          {% if draft.is_reminder %}
+          <span class="text-xs bg-yellow text-mantle px-2 py-0.5 rounded-full">Hatırlatma</span>
+          {% else %}
+          <span class="text-xs bg-blue text-mantle px-2 py-0.5 rounded-full">İlk Mail</span>
+          {% endif %}
+        </div>
+        <p class="text-xs text-overlay0 truncate">Konu: {{ draft.subject }}</p>
+        {% if draft.cc %}<p class="text-xs text-overlay0">CC: {{ draft.cc }}</p>{% endif %}
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <a href="/drafts/{{ draft.id }}/edit"
+           class="px-3 py-1.5 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg transition">
+          Düzenle
+        </a>
+        <form method="post" action="/drafts/{{ draft.id }}/delete"
+              onsubmit="return confirm('Bu taslağı silmek istediğinize emin misiniz?')">
+          <button class="px-3 py-1.5 bg-surface0 hover:bg-red hover:text-mantle text-red text-xs rounded-lg transition">
+            Sil
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  {% else %}
+  <div class="bg-mantle rounded-xl p-10 text-center">
+    <p class="text-overlay0 text-sm mb-4">Henüz taslak yok.</p>
+    <a href="/drafts/new" class="text-blue hover:underline text-sm">İlk taslağı oluştur →</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
