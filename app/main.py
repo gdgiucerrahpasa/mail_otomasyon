@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -14,8 +15,19 @@ from app.routes import auth, dashboard, drafts, logs
 from app.routes import settings as settings_router
 
 
+def _write_service_account_from_env():
+    """Railway (and similar PaaS) have no place to upload credentials.json —
+    paste its content into GOOGLE_CREDENTIALS_JSON instead and it's written
+    to disk on every boot, since the filesystem doesn't persist across deploys."""
+    raw = os.getenv("GOOGLE_CREDENTIALS_JSON", "").strip()
+    if raw:
+        with open("credentials.json", "w") as f:
+            f.write(raw)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _write_service_account_from_env()
     init_db()
     start_scheduler()
     yield
@@ -32,6 +44,19 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.middleware("http")
+async def no_index_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    return response
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt():
+    return PlainTextResponse("User-agent: *\nDisallow: /\n")
+
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
