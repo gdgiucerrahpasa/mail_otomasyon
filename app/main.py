@@ -1,21 +1,8 @@
 import os
-import socket
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 load_dotenv()
-
-# Railway's containers advertise IPv6 routes that don't actually have egress,
-# so smtplib/imaplib pick an AAAA record for smtp.gmail.com and fail with
-# "Network is unreachable". Force every DNS lookup in the process to IPv4.
-_orig_getaddrinfo = socket.getaddrinfo
-
-
-def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-
-
-socket.getaddrinfo = _ipv4_only_getaddrinfo
 
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse

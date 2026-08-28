@@ -1,4 +1,4 @@
-# Sunucu Deploy Adımları — mail.gdgoncampusiuc.com
+# Sunucu Deploy Adımları — mailotomasyon.gdgoncampusiuc.com
 
 ## 1. Kodu sunucuya kopyala
 
@@ -65,14 +65,14 @@ sudo journalctl -u gdg-mail -f
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot certonly --nginx -d mail.gdgoncampusiuc.com
+sudo certbot certonly --nginx -d mailotomasyon.gdgoncampusiuc.com
 ```
 
 ## 6. Nginx config'i kur
 
 ```bash
-sudo cp deploy/nginx_mail.conf /etc/nginx/sites-available/mail.gdgoncampusiuc.com
-sudo ln -s /etc/nginx/sites-available/mail.gdgoncampusiuc.com \
+sudo cp deploy/nginx_mail.conf /etc/nginx/sites-available/mailotomasyon.gdgoncampusiuc.com
+sudo ln -s /etc/nginx/sites-available/mailotomasyon.gdgoncampusiuc.com \
            /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
@@ -84,7 +84,7 @@ Domain panelinde (Cloudflare, vb.):
 
 ```
 Type: A
-Name: mail
+Name: mailotomasyon
 Value: sunucu_ip_adresi
 TTL:  Auto
 ```

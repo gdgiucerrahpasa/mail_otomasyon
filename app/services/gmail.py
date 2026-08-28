@@ -15,10 +15,8 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# 465 (implicit TLS) instead of 587 (STARTTLS) — some PaaS networks (Railway
-# included) block 587 outbound for anti-spam reasons but leave 465 open.
 SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 465
+SMTP_PORT = 587
 
 
 def download_image(drive_link: str) -> Optional[bytes]:
@@ -124,7 +122,8 @@ def send_mail(
         if bcc:
             recipients.extend(bcc)
 
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, recipients, msg.as_string())
 

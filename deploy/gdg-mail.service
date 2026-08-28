@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
+User=ubuntu
 WorkingDirectory=/var/www/gdg_mail_web
 EnvironmentFile=/var/www/gdg_mail_web/.env
 ExecStart=/var/www/gdg_mail_web/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001 --workers 1
