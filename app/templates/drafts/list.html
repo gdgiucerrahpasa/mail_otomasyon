@@ -24,7 +24,7 @@
   {% set slugs = drafts | map(attribute='slug') | unique | list %}
   {% for slug in slugs %}
   {% set slug_drafts = drafts | selectattr('slug', 'equalto', slug) | list %}
-  <div class="bg-mantle rounded-xl overflow-hidden">
+  <div class="bg-mantle rounded-xl overflow-hidden shadow-sm border border-surface1">
     <div class="px-5 py-3 bg-surface0 flex items-center gap-2">
       <span class="text-mauve font-mono text-sm font-bold">{{ slug }}</span>
       <span class="text-overlay0 text-xs">({{ slug_drafts | length }} taslak)</span>
@@ -61,7 +61,7 @@
   {% endfor %}
 
   {% else %}
-  <div class="bg-mantle rounded-xl p-10 text-center">
+  <div class="bg-mantle rounded-xl p-10 text-center shadow-sm border border-surface1">
     <p class="text-overlay0 text-sm mb-4">Henüz taslak yok.</p>
     <a href="/drafts/new" class="text-blue hover:underline text-sm">İlk taslağı oluştur →</a>
   </div>

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -11,6 +13,7 @@ from app.models import Run, LogEntry
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+templates.env.filters["tr_dt"] = lambda dt: dt + timedelta(hours=3)
 
 
 @router.get("/")

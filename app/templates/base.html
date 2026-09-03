@@ -4,30 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}GDG Mail Otomasyon{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Google Sans"', 'Roboto', 'Arial', 'sans-serif'],
+            mono: ['"Roboto Mono"', 'monospace'],
+          },
           colors: {
-            base:     '#1e1e2e',
-            mantle:   '#181825',
-            crust:    '#11111b',
-            surface0: '#313244',
-            surface1: '#45475a',
-            overlay0: '#6c7086',
-            subtext0: '#a6adc8',
-            text:     '#cdd6f4',
-            lavender: '#b4befe',
-            blue:     '#89b4fa',
-            sapphire: '#74c7ec',
-            teal:     '#94e2d5',
-            green:    '#a6e3a1',
-            yellow:   '#f9e2af',
-            peach:    '#fab387',
-            red:      '#f38ba8',
-            mauve:    '#cba6f7',
+            base:     '#f8f9fa',
+            mantle:   '#ffffff',
+            crust:    '#f1f3f4',
+            surface0: '#f1f3f4',
+            surface1: '#dadce0',
+            overlay0: '#80868b',
+            subtext0: '#5f6368',
+            text:     '#202124',
+            lavender: '#1a73e8',
+            blue:     '#1a73e8',
+            sapphire: '#e8f0fe',
+            teal:     '#12b5cb',
+            green:    '#34a853',
+            yellow:   '#f9ab00',
+            peach:    '#fa903e',
+            red:      '#ea4335',
+            mauve:    '#1a73e8',
           }
         }
       }
@@ -35,45 +42,51 @@
   </script>
   <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
   <style>
-    body { background-color: #1e1e2e; color: #cdd6f4; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #181825; }
-    ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
-    .log-ok   { color: #a6e3a1; }
-    .log-err  { color: #f38ba8; }
-    .log-warn { color: #f9e2af; }
-    .log-info { color: #89b4fa; }
+    body { background-color: #f8f9fa; color: #202124; font-family: 'Google Sans', Roboto, Arial, sans-serif; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f8f9fa; }
+    ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
+    .log-ok   { color: #1e8e3e; }
+    .log-err  { color: #d93025; }
+    .log-warn { color: #b06000; }
+    .log-info { color: #1a73e8; }
   </style>
 </head>
 <body class="min-h-screen flex">
 
   <!-- Sidebar -->
-  <nav class="w-56 min-h-screen bg-mantle flex flex-col py-6 px-4 shrink-0">
-    <div class="mb-8">
-      <span class="text-mauve font-bold text-lg">✉️ Mail Admin</span>
+  <nav class="w-56 min-h-screen bg-mantle border-r border-surface1 flex flex-col py-6 px-4 shrink-0">
+    <div class="mb-8 flex items-center gap-2.5">
+      <span class="flex gap-0.5 shrink-0">
+        <span class="w-2 h-2 rounded-full bg-blue"></span>
+        <span class="w-2 h-2 rounded-full bg-red"></span>
+        <span class="w-2 h-2 rounded-full bg-yellow"></span>
+        <span class="w-2 h-2 rounded-full bg-green"></span>
+      </span>
+      <span class="text-text font-medium text-base">Mail Admin</span>
     </div>
     <ul class="space-y-1 flex-1">
       <li>
-        <a href="/" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface0 transition text-text text-sm
-          {% if request.url.path == '/' %}bg-surface0 text-lavender{% endif %}">
+        <a href="/" class="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-surface0 transition text-text text-sm
+          {% if request.url.path == '/' %}bg-sapphire text-lavender font-medium{% endif %}">
           🚀 Dashboard
         </a>
       </li>
       <li>
-        <a href="/drafts" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface0 transition text-text text-sm
-          {% if '/drafts' in request.url.path %}bg-surface0 text-lavender{% endif %}">
+        <a href="/drafts" class="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-surface0 transition text-text text-sm
+          {% if '/drafts' in request.url.path %}bg-sapphire text-lavender font-medium{% endif %}">
           ✉️ Taslaklar
         </a>
       </li>
       <li>
-        <a href="/logs" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface0 transition text-text text-sm
-          {% if '/logs' in request.url.path %}bg-surface0 text-lavender{% endif %}">
+        <a href="/logs" class="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-surface0 transition text-text text-sm
+          {% if '/logs' in request.url.path %}bg-sapphire text-lavender font-medium{% endif %}">
           📋 Loglar
         </a>
       </li>
       <li>
-        <a href="/settings" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface0 transition text-text text-sm
-          {% if '/settings' in request.url.path %}bg-surface0 text-lavender{% endif %}">
+        <a href="/settings" class="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-surface0 transition text-text text-sm
+          {% if '/settings' in request.url.path %}bg-sapphire text-lavender font-medium{% endif %}">
           ⚙️ Ayarlar
         </a>
       </li>

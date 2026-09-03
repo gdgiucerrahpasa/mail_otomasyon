@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -8,6 +10,7 @@ from app.models import Run, LogEntry
 
 router = APIRouter(prefix="/logs")
 templates = Jinja2Templates(directory="app/templates")
+templates.env.filters["tr_dt"] = lambda dt: dt + timedelta(hours=3)
 
 PAGE_SIZE = 200
 

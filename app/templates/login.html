@@ -3,21 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Giriş — GDG Mail Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { colors: {
-        base: '#1e1e2e', mantle: '#181825', surface0: '#313244',
-        text: '#cdd6f4', blue: '#89b4fa', red: '#f38ba8', mauve: '#cba6f7',
-        overlay0: '#6c7086',
-      }}}
+      theme: { extend: {
+        fontFamily: { sans: ['"Google Sans"', 'Roboto', 'Arial', 'sans-serif'] },
+        colors: {
+          base: '#f8f9fa', mantle: '#ffffff', surface0: '#f1f3f4',
+          text: '#202124', blue: '#1a73e8', red: '#ea4335', mauve: '#1a73e8',
+          overlay0: '#80868b',
+        }
+      }}
     }
   </script>
-  <style>body { background-color: #1e1e2e; color: #cdd6f4; }</style>
+  <style>body { background-color: #f8f9fa; color: #202124; font-family: 'Google Sans', Roboto, Arial, sans-serif; }</style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
-  <div class="bg-mantle rounded-2xl p-10 w-full max-w-sm shadow-2xl text-center">
+  <div class="bg-mantle border border-surface1 rounded-2xl p-10 w-full max-w-sm shadow-lg text-center">
     <div class="text-4xl mb-4">✉️</div>
     <h1 class="text-2xl font-bold text-text mb-2">GDG Mail Admin</h1>
     <p class="text-sm text-overlay0 mb-8">Yalnızca yetkili adminler erişebilir.</p>

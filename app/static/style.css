@@ -1,8 +1,8 @@
 /* Extra styles beyond Tailwind — kept minimal */
-.log-ok   { color: #a6e3a1; }
-.log-err  { color: #f38ba8; }
-.log-warn { color: #f9e2af; }
-.log-info { color: #89b4fa; }
+.log-ok   { color: #1e8e3e; }
+.log-err  { color: #d93025; }
+.log-warn { color: #b06000; }
+.log-info { color: #1a73e8; }
 
 /* Fade in for new HTMX-appended log lines */
 @keyframes fadeIn {

@@ -24,7 +24,7 @@
   </div>
 
   <!-- Status bar -->
-  <div class="bg-surface0 rounded-xl px-5 py-4 flex items-center gap-4">
+  <div class="bg-mantle rounded-xl px-5 py-4 flex items-center gap-4 shadow-sm border border-surface1">
     {% if is_running %}
     <span class="w-3 h-3 rounded-full bg-green animate-pulse"></span>
     <span class="text-green font-medium text-sm">Gönderim çalışıyor — Run #{{ current_run_id }}</span>
@@ -36,7 +36,7 @@
 
   <!-- Live log (only shown when running) -->
   {% if is_running %}
-  <div class="bg-mantle rounded-xl p-5">
+  <div class="bg-mantle rounded-xl p-5 shadow-sm border border-surface1">
     <h2 class="text-sm font-semibold text-subtext0 mb-3 uppercase tracking-wide">Canlı Log</h2>
     <div id="live-log"
          class="font-mono text-xs space-y-0.5 max-h-80 overflow-y-auto">
@@ -57,7 +57,7 @@
     {% if runs %}
     <div class="space-y-3">
       {% for run in runs %}
-      <div class="bg-surface0 rounded-xl px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="bg-mantle rounded-xl px-5 py-4 flex flex-wrap items-center justify-between gap-4 shadow-sm border border-surface1">
         <div class="flex items-center gap-3">
           {% if run.status == 'completed' %}
             <span class="text-green text-lg">✅</span>
@@ -73,9 +73,9 @@
           <div>
             <p class="text-sm font-medium text-text">Run #{{ run.id }}</p>
             <p class="text-xs text-overlay0">
-              {{ run.started_at.strftime('%d.%m.%Y %H:%M') }}
+              {{ (run.started_at | tr_dt).strftime('%d.%m.%Y %H:%M') }}
               {% if run.finished_at %}
-              — {{ run.finished_at.strftime('%H:%M') }}
+              — {{ (run.finished_at | tr_dt).strftime('%H:%M') }}
               {% endif %}
             </p>
           </div>

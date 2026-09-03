@@ -5,7 +5,7 @@
   {% elif entry.level == 'INFO' %}log-info
   {% else %}text-text{% endif %}"
   hx-swap-oob="beforeend:#live-log">
-  <span class="text-overlay0">{{ entry.timestamp.strftime('%H:%M:%S') }}</span>
+  <span class="text-overlay0">{{ (entry.timestamp | tr_dt).strftime('%H:%M:%S') }}</span>
   {{ entry.message }}
 </div>
 {% endfor %}
