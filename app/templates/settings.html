@@ -134,8 +134,13 @@
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">⚙️ Gönderim Ayarları</h2>
       <div class="grid grid-cols-3 gap-4">
         <div>
-          <label class="block text-xs text-subtext0 mb-1.5">Gönderici değişince bekleme (sn)</label>
-          <input type="number" name="wait_seconds_between_senders" value="{{ cfg.get('wait_seconds_between_senders','180') }}"
+          <label class="block text-xs text-subtext0 mb-1.5">Mailler arası min bekleme (sn)</label>
+          <input type="number" name="min_wait_seconds" value="{{ cfg.get('min_wait_seconds','12') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Mailler arası max bekleme (sn)</label>
+          <input type="number" name="max_wait_seconds" value="{{ cfg.get('max_wait_seconds','24') }}"
                  class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
         </div>
         <div>
@@ -146,6 +151,11 @@
         <div>
           <label class="block text-xs text-subtext0 mb-1.5">Çalışma başına max mail</label>
           <input type="number" name="max_mails_per_run" value="{{ cfg.get('max_mails_per_run','50') }}"
+                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
+        </div>
+        <div>
+          <label class="block text-xs text-subtext0 mb-1.5">Gönderici başına günlük mail limiti</label>
+          <input type="number" name="max_mails_per_sender_per_day" value="{{ cfg.get('max_mails_per_sender_per_day','450') }}"
                  class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
         </div>
       </div>

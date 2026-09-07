@@ -1,5 +1,6 @@
 """SMTP mail sending — ported unchanged from gmail_sender.py."""
 
+import html as html_lib
 import logging
 import smtplib
 import time
@@ -42,6 +43,22 @@ def _fill_template(template: str, placeholders: dict) -> str:
     return result
 
 
+def _html_to_text(html_body: str) -> str:
+    """Best-effort plain-text version of an HTML body for the multipart/alternative part.
+
+    Mail providers score HTML-only messages (no text/plain part) as more spam-like,
+    so every send should carry both.
+    """
+    text = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", html_body)
+    text = re.sub(r"(?i)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?i)</(p|div|tr|h[1-6])\s*>", "\n\n", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = html_lib.unescape(text)
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def build_html_body(
     template: str,
     placeholders: dict,
@@ -74,8 +91,12 @@ def send_mail(
         msg = MIMEMultipart("related")
         msg["From"] = sender_email
         msg["To"] = to_email
+        msg["Reply-To"] = sender_email
+        msg["Date"] = email_utils.formatdate(localtime=True)
+        msg["List-Unsubscribe"] = f"<mailto:{sender_email}?subject=unsubscribe>"
 
-        new_message_id = custom_message_id or email_utils.make_msgid(domain="gmail.com")
+        sender_domain = sender_email.split("@")[-1] if "@" in sender_email else "gmail.com"
+        new_message_id = custom_message_id or email_utils.make_msgid(domain=sender_domain)
         msg["Message-ID"] = new_message_id
 
         is_reply = bool(reply_to_message_id)
@@ -91,6 +112,9 @@ def send_mail(
             msg["Cc"] = ", ".join(cc)
 
         alternative = MIMEMultipart("alternative")
+        # Plain-text part must come before html — clients showing the "simplest"
+        # part expect it first, and a missing text/plain alternative hurts spam scoring.
+        alternative.attach(MIMEText(_html_to_text(html_body), "plain", "utf-8"))
         alternative.attach(MIMEText(html_body, "html", "utf-8"))
         msg.attach(alternative)
 
