@@ -25,6 +25,15 @@ class Setting(Base):
     value = Column(Text, default="")
 
 
+class SenderUsage(Base):
+    """Tracks per-sender-account daily send counts to stay under Gmail's daily limits."""
+    __tablename__ = "sender_usage"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_email = Column(String(255), nullable=False, index=True)
+    date = Column(String(10), nullable=False, index=True)  # YYYY-MM-DD
+    count = Column(Integer, default=0)
+
+
 class Run(Base):
     __tablename__ = "runs"
     id = Column(Integer, primary_key=True, index=True)

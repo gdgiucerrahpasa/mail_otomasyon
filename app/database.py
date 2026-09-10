@@ -54,9 +54,11 @@ def _seed_defaults():
         "email_cc": "",
         "email_bcc": "",
         "header_image": "",
-        "wait_seconds_between_senders": "180",
+        "min_wait_seconds": "12",
+        "max_wait_seconds": "24",
         "reminder_after_days": "3",
         "max_mails_per_run": "50",
+        "max_mails_per_sender_per_day": "450",
         "schedule_interval_hours": "6",
         "schedule_enabled": "false",
     }

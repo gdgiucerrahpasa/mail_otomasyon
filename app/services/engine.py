@@ -8,6 +8,7 @@ Key changes:
 """
 
 import logging
+import random
 import threading
 import time
 from datetime import datetime, date
@@ -75,6 +76,25 @@ def _get_sender_info(sender_name: str, senders_df: pd.DataFrame, col: dict) -> O
     return None
 
 
+def _get_sender_usage_today(db, sender_email: str) -> int:
+    from app.models import SenderUsage
+    today_str = date.today().isoformat()
+    row = db.query(SenderUsage).filter_by(sender_email=sender_email, date=today_str).first()
+    return row.count if row else 0
+
+
+def _increment_sender_usage(db, sender_email: str):
+    from app.models import SenderUsage
+    today_str = date.today().isoformat()
+    row = db.query(SenderUsage).filter_by(sender_email=sender_email, date=today_str).first()
+    if row:
+        row.count += 1
+    else:
+        row = SenderUsage(sender_email=sender_email, date=today_str, count=1)
+        db.add(row)
+    db.commit()
+
+
 def _choose_draft(segment: str, is_reminder: bool, db):
     from app.models import Draft
     slug = segment.strip().lower()
@@ -119,9 +139,11 @@ def build_settings_dict(db) -> dict:
         "global_cc":  [e.strip() for e in s.get("email_cc", "").split(",") if e.strip()],
         "global_bcc": [e.strip() for e in s.get("email_bcc", "").split(",") if e.strip()],
         "header_image": s.get("header_image", ""),
-        "wait_seconds_between_senders": int(s.get("wait_seconds_between_senders", "180")),
-        "reminder_after_days":          int(s.get("reminder_after_days", "2")),
-        "max_mails_per_run":            int(s.get("max_mails_per_run", "50")),
+        "min_wait_seconds":              int(s.get("min_wait_seconds", "12")),
+        "max_wait_seconds":              int(s.get("max_wait_seconds", "24")),
+        "reminder_after_days":           int(s.get("reminder_after_days", "2")),
+        "max_mails_per_run":             int(s.get("max_mails_per_run", "50")),
+        "max_mails_per_sender_per_day":  int(s.get("max_mails_per_sender_per_day", "450")),
     }
 
 
@@ -141,9 +163,11 @@ def run_bulk_send(
     sender_cols    = settings["sender_columns"]
     sheet_names    = settings["sheet_names"]
     spreadsheet_id = settings["spreadsheet_id"]
-    wait_between   = settings["wait_seconds_between_senders"]
+    min_wait       = settings["min_wait_seconds"]
+    max_wait       = max(settings["max_wait_seconds"], min_wait)
     reminder_days  = settings["reminder_after_days"]
     max_per_run    = settings["max_mails_per_run"]
+    max_per_sender_day = settings["max_mails_per_sender_per_day"]
     global_cc      = settings["global_cc"]
     global_bcc     = settings["global_bcc"]
     header_image_link = settings.get("header_image", "")
@@ -163,8 +187,8 @@ def run_bulk_send(
         return result
 
     headers = list(recipients_df.columns)
-    last_sender_email: Optional[str] = None
     total_sent_this_run = 0
+    attempts_this_run = 0
 
     for idx, row in recipients_df.iterrows():
         if stop_event and stop_event.is_set():
@@ -213,6 +237,12 @@ def run_bulk_send(
             result.failed += 1
             continue
 
+        sender_usage_today = _get_sender_usage_today(db, sender_info["email"])
+        if sender_usage_today >= max_per_sender_day:
+            log("WARNING", f"{label}: 🚫 '{sender_info['email']}' bugünkü gönderim limitine ({max_per_sender_day}) ulaştı, atlandı.")
+            result.skipped += 1
+            continue
+
         # Decide: first email or reminder
         is_reminder = False
         if mail_count == 0:
@@ -256,11 +286,11 @@ def run_bulk_send(
 
         html_body, sig_bytes = gmail_svc.build_html_body(draft.body_html, placeholders, sig_data, header_image_data)
 
-        if last_sender_email is not None and last_sender_email != sender_info["email"]:
-            log("INFO", f"🔄 Gönderici değişiyor → {sender_info['email']}. {wait_between//60} dk bekleniyor...")
-            time.sleep(wait_between)
-
-        last_sender_email = sender_info["email"]
+        if attempts_this_run > 0:
+            delay = random.randint(min_wait, max_wait)
+            log("INFO", f"⏳ Spam koruması: {delay} sn bekleniyor...")
+            time.sleep(delay)
+        attempts_this_run += 1
 
         draft_cc = [e.strip() for e in draft.cc.split(",") if e.strip()]
         draft_bcc = [e.strip() for e in draft.bcc.split(",") if e.strip()]
@@ -285,6 +315,7 @@ def run_bulk_send(
         )
 
         if success:
+            _increment_sender_usage(db, sender_info["email"])
             new_count = mail_count + 1
             today_str = datetime.today().strftime("%Y-%m-%d")
 
