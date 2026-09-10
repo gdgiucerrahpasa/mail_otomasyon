@@ -118,6 +118,7 @@ def build_settings_dict(db) -> dict:
         },
         "global_cc":  [e.strip() for e in s.get("email_cc", "").split(",") if e.strip()],
         "global_bcc": [e.strip() for e in s.get("email_bcc", "").split(",") if e.strip()],
+        "header_image": s.get("header_image", ""),
         "wait_seconds_between_senders": int(s.get("wait_seconds_between_senders", "180")),
         "reminder_after_days":          int(s.get("reminder_after_days", "2")),
         "max_mails_per_run":            int(s.get("max_mails_per_run", "50")),
@@ -145,6 +146,13 @@ def run_bulk_send(
     max_per_run    = settings["max_mails_per_run"]
     global_cc      = settings["global_cc"]
     global_bcc     = settings["global_bcc"]
+    header_image_link = settings.get("header_image", "")
+
+    header_image_data = None
+    if header_image_link:
+        header_image_data = gmail_svc.download_image(header_image_link)
+        if not header_image_data:
+            log("WARNING", "⚠️ Başlık fotoğrafı indirilemedi, mailler fotoğrafsız gönderilecek.")
 
     log("INFO", "📋 Sheets okunuyor...")
     recipients_df = sheets_svc.read_sheet(service, spreadsheet_id, sheet_names["recipients"])
@@ -246,7 +254,7 @@ def run_bulk_send(
         if sender_info["signature"]:
             sig_data = gmail_svc.download_image(sender_info["signature"])
 
-        html_body, sig_bytes = gmail_svc.build_html_body(draft.body_html, placeholders, sig_data)
+        html_body, sig_bytes = gmail_svc.build_html_body(draft.body_html, placeholders, sig_data, header_image_data)
 
         if last_sender_email is not None and last_sender_email != sender_info["email"]:
             log("INFO", f"🔄 Gönderici değişiyor → {sender_info['email']}. {wait_between//60} dk bekleniyor...")
@@ -269,6 +277,7 @@ def run_bulk_send(
             subject             = draft.subject,
             html_body           = html_body,
             signature_data      = sig_bytes,
+            header_image_data   = header_image_data,
             cc                  = all_cc,
             bcc                 = all_bcc,
             attachments         = attachment_paths,

@@ -19,7 +19,7 @@ SETTING_KEYS = [
     "col_recipient_segment",
     "col_sender_name", "col_sender_title", "col_sender_email",
     "col_sender_password", "col_sender_signature",
-    "email_cc", "email_bcc",
+    "email_cc", "email_bcc", "header_image",
     "wait_seconds_between_senders", "reminder_after_days", "max_mails_per_run",
     "schedule_enabled", "schedule_interval_hours",
 ]

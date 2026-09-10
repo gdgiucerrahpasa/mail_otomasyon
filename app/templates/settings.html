@@ -127,6 +127,13 @@
                  class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue">
         </div>
       </div>
+      <div>
+        <label class="block text-xs text-subtext0 mb-1.5">Başlık Fotoğrafı (Google Drive linki veya dosya ID'si)</label>
+        <input type="text" name="header_image" value="{{ cfg.get('header_image','') }}"
+               placeholder="1Y9iYmcOBQHrM067zl61pfQjMc_ghg4rO"
+               class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
+        <p class="text-xs text-overlay0 mt-1">Tüm maillerin en üstüne eklenir. Dosya "bağlantıya sahip olan herkes görüntüleyebilir" olmalı. Boş bırakılırsa eklenmez.</p>
+      </div>
     </section>
 
     <!-- Send Settings -->

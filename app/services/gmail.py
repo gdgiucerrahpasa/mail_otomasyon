@@ -46,7 +46,9 @@ def build_html_body(
     template: str,
     placeholders: dict,
     signature_data: Optional[bytes],
+    header_image_data: Optional[bytes] = None,
     cid: str = "signature_img",
+    header_cid: str = "header_img",
 ) -> tuple[str, Optional[bytes]]:
     filled = _fill_template(template, placeholders)
     if signature_data:
@@ -54,6 +56,8 @@ def build_html_body(
         filled = filled.replace("[İmza]", f'<img src="cid:{cid}" style="width:420px;height:210px;">')
         if f"cid:{cid}" not in filled:
             filled += f'<br><img src="cid:{cid}" style="width:420px;height:210px;">'
+    if header_image_data:
+        filled = f'<img src="cid:{header_cid}" style="max-width:600px;width:100%;"><br>' + filled
     return filled, signature_data
 
 
@@ -64,6 +68,7 @@ def send_mail(
     subject: str,
     html_body: str,
     signature_data: Optional[bytes] = None,
+    header_image_data: Optional[bytes] = None,
     cc: list = None,
     bcc: list = None,
     attachments: list = None,
@@ -99,6 +104,12 @@ def send_mail(
             img.add_header("Content-ID", "<signature_img>")
             img.add_header("Content-Disposition", "inline")
             msg.attach(img)
+
+        if header_image_data:
+            himg = MIMEImage(header_image_data)
+            himg.add_header("Content-ID", "<header_img>")
+            himg.add_header("Content-Disposition", "inline")
+            msg.attach(himg)
 
         if attachments and not is_reply:
             import os

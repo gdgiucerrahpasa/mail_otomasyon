@@ -53,6 +53,7 @@ def _seed_defaults():
         "col_sender_signature": "İmza Linki",
         "email_cc": "",
         "email_bcc": "",
+        "header_image": "",
         "wait_seconds_between_senders": "180",
         "reminder_after_days": "3",
         "max_mails_per_run": "50",
