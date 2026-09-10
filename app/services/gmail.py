@@ -74,7 +74,13 @@ def build_html_body(
         if f"cid:{cid}" not in filled:
             filled += f'<br><img src="cid:{cid}" style="width:420px;height:210px;">'
     if header_image_data:
-        filled = f'<img src="cid:{header_cid}" style="max-width:600px;width:100%;"><br>' + filled
+        header_html = f'<img src="cid:{header_cid}" style="max-width:600px;width:100%;display:block;"><br>'
+        body_match = re.search(r'<body[^>]*>', filled, re.IGNORECASE)
+        if body_match:
+            insert_at = body_match.end()
+            filled = filled[:insert_at] + header_html + filled[insert_at:]
+        else:
+            filled = header_html + filled
     return filled, signature_data
 
 
