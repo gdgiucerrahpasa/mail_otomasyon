@@ -74,13 +74,21 @@ def build_html_body(
         if f"cid:{cid}" not in filled:
             filled += f'<br><img src="cid:{cid}" style="width:420px;height:210px;">'
     if header_image_data:
-        header_html = f'<img src="cid:{header_cid}" style="max-width:600px;width:100%;display:block;"><br>'
-        body_match = re.search(r'<body[^>]*>', filled, re.IGNORECASE)
-        if body_match:
-            insert_at = body_match.end()
+        header_html = f'<img src="cid:{header_cid}" style="max-width:100%;width:100%;display:block;margin:0 0 16px 0;">'
+        # Insert right before the first paragraph so the image sits inside the
+        # same card as the greeting, not in the gap above it — falls back to
+        # right after <body> (or a plain prepend) for body-less fragments.
+        p_match = re.search(r'<p[\s>]', filled, re.IGNORECASE)
+        if p_match:
+            insert_at = p_match.start()
             filled = filled[:insert_at] + header_html + filled[insert_at:]
         else:
-            filled = header_html + filled
+            body_match = re.search(r'<body[^>]*>', filled, re.IGNORECASE)
+            if body_match:
+                insert_at = body_match.end()
+                filled = filled[:insert_at] + header_html + filled[insert_at:]
+            else:
+                filled = header_html + filled
     return filled, signature_data
 
 
