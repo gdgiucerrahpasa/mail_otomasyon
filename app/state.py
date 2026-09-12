@@ -1,10 +1,38 @@
 """Global run state — single-process safe."""
 import threading
+import time
 
 _lock = threading.Lock()
 _running = False
 _current_run_id: int | None = None
 _stop_event = threading.Event()
+
+# --- Login brute-force protection ---------------------------------------
+_login_lock = threading.Lock()
+_login_attempts: dict[str, list[float]] = {}
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_ATTEMPT_WINDOW_SECONDS = 15 * 60  # 15 dakika
+
+
+def register_login_failure(ip: str) -> None:
+    with _login_lock:
+        now = time.time()
+        attempts = [t for t in _login_attempts.get(ip, []) if now - t < LOGIN_ATTEMPT_WINDOW_SECONDS]
+        attempts.append(now)
+        _login_attempts[ip] = attempts
+
+
+def is_login_blocked(ip: str) -> bool:
+    with _login_lock:
+        now = time.time()
+        attempts = [t for t in _login_attempts.get(ip, []) if now - t < LOGIN_ATTEMPT_WINDOW_SECONDS]
+        _login_attempts[ip] = attempts
+        return len(attempts) >= MAX_LOGIN_ATTEMPTS
+
+
+def clear_login_failures(ip: str) -> None:
+    with _login_lock:
+        _login_attempts.pop(ip, None)
 
 
 def is_running() -> bool:

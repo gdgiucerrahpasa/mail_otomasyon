@@ -32,6 +32,10 @@
     <p class="text-red text-sm mb-4 bg-surface0 rounded-lg px-3 py-2">
       ❌ Kullanıcı adı veya şifre hatalı.
     </p>
+    {% elif error == 'too_many_attempts' %}
+    <p class="text-red text-sm mb-4 bg-surface0 rounded-lg px-3 py-2">
+      🚫 Çok fazla hatalı deneme. Lütfen 15 dakika sonra tekrar deneyin.
+    </p>
     {% endif %}
 
     <form method="post" action="/login" class="space-y-4 text-left">
