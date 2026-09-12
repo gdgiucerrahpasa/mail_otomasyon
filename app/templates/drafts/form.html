@@ -11,7 +11,7 @@
 
   <form method="post" action="{{ action }}" class="space-y-5">
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <!-- Name -->
       <div class="col-span-2 md:col-span-1">
         <label class="block text-xs font-medium text-subtext0 mb-1.5">Taslak Adı *</label>
@@ -68,7 +68,7 @@
                 class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue resize-y">{{ draft.body_html if draft else '' }}</textarea>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <!-- CC -->
       <div>
         <label class="block text-xs font-medium text-subtext0 mb-1.5">CC <span class="text-overlay0 font-normal">(virgülle ayırın)</span></label>

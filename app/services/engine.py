@@ -7,6 +7,7 @@ Key changes:
   - stop_event checked each iteration for graceful stop
 """
 
+import colorsys
 import logging
 import random
 import threading
@@ -20,6 +21,25 @@ from app.services import sheets as sheets_svc
 from app.services import gmail as gmail_svc
 
 logger = logging.getLogger(__name__)
+
+# Rows filled with any shade of red, yellow, or cyan are treated as "do not
+# mail" markers — checked by hue so light/dark variants all match, not just
+# one exact RGB value.
+_SKIP_HUE_RANGES = [
+    (0, 15), (345, 360),   # red
+    (45, 75),              # yellow
+    (165, 195),            # cyan / camgöbeği
+]
+
+
+def _is_skip_color(rgb: Optional[tuple]) -> bool:
+    if not rgb:
+        return False
+    h, s, v = colorsys.rgb_to_hsv(*rgb)
+    if s < 0.15 or v < 0.15:
+        return False  # near white/gray/black — not an intentional marker
+    hue_deg = h * 360
+    return any(lo <= hue_deg <= hi for lo, hi in _SKIP_HUE_RANGES)
 
 
 class SendResult:
@@ -187,6 +207,7 @@ def run_bulk_send(
         return result
 
     headers = list(recipients_df.columns)
+    row_colors = sheets_svc.get_row_colors(service, spreadsheet_id, sheet_names["recipients"], len(recipients_df))
     total_sent_this_run = 0
     attempts_this_run = 0
 
@@ -198,6 +219,12 @@ def run_bulk_send(
         if total_sent_this_run >= max_per_run:
             log("WARNING", f"⚠️ Maksimum limit ({max_per_run}) doldu.")
             break
+
+        label_early = f"[Satır {idx+2}]"
+        if _is_skip_color(row_colors[idx] if idx < len(row_colors) else None):
+            log("INFO", f"{label_early}: 🎨 Satır renkle işaretlenmiş (kırmızı/sarı/camgöbeği), atlandı.")
+            result.skipped += 1
+            continue
 
         recipient_name    = str(row.get(recipient_cols["name"],    "")).strip()
         company           = str(row.get(recipient_cols["company"], "")).strip()

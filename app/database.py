@@ -59,7 +59,9 @@ def _seed_defaults():
         "reminder_after_days": "3",
         "max_mails_per_run": "50",
         "max_mails_per_sender_per_day": "450",
+        "schedule_mode": "interval",
         "schedule_interval_hours": "6",
+        "schedule_time": "09:00",
         "schedule_enabled": "false",
     }
     for k, v in defaults.items():

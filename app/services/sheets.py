@@ -92,6 +92,31 @@ def read_sheet(service, spreadsheet_id: str, sheet_name: str) -> Optional[pd.Dat
         return None
 
 
+def get_row_colors(service, spreadsheet_id: str, sheet_name: str, num_data_rows: int) -> list[Optional[tuple]]:
+    """Returns column-A background color (r,g,b floats 0-1, or None if unfilled) for each
+    data row (sheet rows 2..num_data_rows+1), aligned with read_sheet()'s DataFrame index."""
+    try:
+        rng = f"'{sheet_name}'!A2:A{num_data_rows + 1}"
+        result = _call(
+            service.spreadsheets().get,
+            spreadsheetId=spreadsheet_id,
+            ranges=[rng],
+            fields="sheets.data.rowData.values.userEnteredFormat.backgroundColor",
+        )
+        sheets_data = result.get("sheets", [])
+        row_data = sheets_data[0]["data"][0].get("rowData", []) if sheets_data and sheets_data[0].get("data") else []
+        colors = []
+        for row in row_data:
+            values = row.get("values", [])
+            bg = values[0].get("userEnteredFormat", {}).get("backgroundColor") if values else None
+            colors.append((bg.get("red", 0.0), bg.get("green", 0.0), bg.get("blue", 0.0)) if bg else None)
+        colors += [None] * (num_data_rows - len(colors))
+        return colors
+    except Exception as e:
+        logger.error(f"Satır renkleri okunamadı: {e}")
+        return [None] * num_data_rows
+
+
 def get_sheet_names(service, spreadsheet_id: str) -> list[str]:
     try:
         result = _call(service.spreadsheets().get, spreadsheetId=spreadsheet_id)

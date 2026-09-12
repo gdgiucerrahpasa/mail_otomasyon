@@ -22,7 +22,7 @@ SETTING_KEYS = [
     "email_cc", "email_bcc", "header_image",
     "min_wait_seconds", "max_wait_seconds", "reminder_after_days", "max_mails_per_run",
     "max_mails_per_sender_per_day",
-    "schedule_enabled", "schedule_interval_hours",
+    "schedule_enabled", "schedule_mode", "schedule_interval_hours", "schedule_time",
 ]
 
 

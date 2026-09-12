@@ -3,13 +3,20 @@
 import logging
 import threading
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from app import state
 
 logger = logging.getLogger(__name__)
 scheduler = BackgroundScheduler()
+
+# Türkiye saati DST kullanmıyor, sabit UTC+3 — sunucunun kendi saat dilimi
+# ne olursa olsun (Oracle VM'ler genelde UTC), kullanıcının girdiği saat
+# hep TR saatine göre tetiklensin diye trigger'a açıkça bu tz veriliyor.
+TR_TZ = ZoneInfo("Europe/Istanbul")
 
 
 def run_engine_job():
@@ -86,10 +93,23 @@ def start_run_in_background():
     return True
 
 
-def _reschedule(interval_hours: int):
+def _reschedule(mode: str, interval_hours: int, time_str: str):
     if scheduler.get_job("bulk_send"):
         scheduler.remove_job("bulk_send")
-    if interval_hours > 0:
+
+    if mode == "daily":
+        try:
+            hour, minute = (int(p) for p in time_str.strip().split(":", 1))
+        except (ValueError, AttributeError):
+            hour, minute = 9, 0
+        scheduler.add_job(
+            run_engine_job,
+            CronTrigger(hour=hour, minute=minute, timezone=TR_TZ),
+            id="bulk_send",
+            replace_existing=True,
+        )
+        logger.info(f"Zamanlayıcı ayarlandı: her gün {hour:02d}:{minute:02d} (TR saati).")
+    elif interval_hours > 0:
         scheduler.add_job(
             run_engine_job,
             "interval",
@@ -100,19 +120,28 @@ def _reschedule(interval_hours: int):
         logger.info(f"Zamanlayıcı ayarlandı: her {interval_hours} saatte bir.")
 
 
+def _read_schedule_config(db) -> dict:
+    from app.models import Setting
+    s = {r.key: r.value for r in db.query(Setting).all()}
+    return {
+        "enabled":  s.get("schedule_enabled", "false").lower() == "true",
+        "mode":     s.get("schedule_mode", "interval"),
+        "hours":    int(s.get("schedule_interval_hours", "6") or 6),
+        "time":     s.get("schedule_time", "09:00"),
+    }
+
+
 def start_scheduler():
     """Called from FastAPI lifespan. Reads schedule config from DB."""
     from app.database import SessionLocal
-    from app.models import Setting
 
     scheduler.start()
 
     db = SessionLocal()
     try:
-        enabled = db.query(Setting).filter_by(key="schedule_enabled").first()
-        hours   = db.query(Setting).filter_by(key="schedule_interval_hours").first()
-        if enabled and enabled.value.lower() == "true" and hours:
-            _reschedule(int(hours.value))
+        cfg = _read_schedule_config(db)
+        if cfg["enabled"]:
+            _reschedule(cfg["mode"], cfg["hours"], cfg["time"])
     except Exception:
         pass
     finally:
@@ -122,14 +151,12 @@ def start_scheduler():
 def apply_schedule_from_db():
     """Re-reads schedule settings from DB and reschedules. Called after settings save."""
     from app.database import SessionLocal
-    from app.models import Setting
 
     db = SessionLocal()
     try:
-        enabled = db.query(Setting).filter_by(key="schedule_enabled").first()
-        hours   = db.query(Setting).filter_by(key="schedule_interval_hours").first()
-        if enabled and enabled.value.lower() == "true" and hours:
-            _reschedule(int(hours.value))
+        cfg = _read_schedule_config(db)
+        if cfg["enabled"]:
+            _reschedule(cfg["mode"], cfg["hours"], cfg["time"])
         else:
             if scheduler.get_job("bulk_send"):
                 scheduler.remove_job("bulk_send")

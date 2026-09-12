@@ -22,7 +22,7 @@
         <input type="text" name="spreadsheet_id" value="{{ cfg.get('spreadsheet_id','') }}"
                class="w-full bg-surface0 border border-surface1 text-text rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue">
       </div>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs text-subtext0 mb-1.5">credentials.json yolu</label>
           <input type="text" name="credentials_file" value="{{ cfg.get('credentials_file','credentials.json') }}"
@@ -48,7 +48,7 @@
     <!-- Sheet Names -->
     <section class="bg-mantle rounded-xl p-6 space-y-4 shadow-sm border border-surface1">
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">📊 Sayfa İsimleri</h2>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs text-subtext0 mb-1.5">Gönderenler Sayfası</label>
           <input type="text" name="sheet_senders" value="{{ cfg.get('sheet_senders','Kişi Bilgileri') }}"
@@ -65,7 +65,7 @@
     <!-- Recipient Columns -->
     <section class="bg-mantle rounded-xl p-6 space-y-4 shadow-sm border border-surface1">
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">📋 Alıcı Sütun Adları</h2>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {% set rec_cols = [
           ('col_recipient_name','Kişi Adı sütunu','col_recipient_name'),
           ('col_recipient_company','Şirket sütunu','col_recipient_company'),
@@ -91,7 +91,7 @@
     <!-- Sender Columns -->
     <section class="bg-mantle rounded-xl p-6 space-y-4 shadow-sm border border-surface1">
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">👤 Gönderen Sütun Adları</h2>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {% set snd_cols = [
           ('col_sender_name','İsim sütunu'),
           ('col_sender_title','Ünvan sütunu'),
@@ -113,7 +113,7 @@
     <section class="bg-mantle rounded-xl p-6 space-y-4 shadow-sm border border-surface1">
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">📧 Varsayılan CC / BCC</h2>
       <p class="text-xs text-subtext0">Bu değerler her taslağın CC/BCC'siyle birleştirilir.</p>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs text-subtext0 mb-1.5">Global CC</label>
           <input type="text" name="email_cc" value="{{ cfg.get('email_cc','') }}"
@@ -139,7 +139,7 @@
     <!-- Send Settings -->
     <section class="bg-mantle rounded-xl p-6 space-y-4 shadow-sm border border-surface1">
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">⚙️ Gönderim Ayarları</h2>
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label class="block text-xs text-subtext0 mb-1.5">Mailler arası min bekleme (sn)</label>
           <input type="number" name="min_wait_seconds" value="{{ cfg.get('min_wait_seconds','12') }}"
@@ -171,22 +171,57 @@
     <!-- Scheduler -->
     <section class="bg-mantle rounded-xl p-6 space-y-4 shadow-sm border border-surface1">
       <h2 class="text-base font-semibold text-text border-b border-surface0 pb-2">🕐 Otomatik Zamanlayıcı</h2>
-      <div class="flex items-center gap-4">
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" name="schedule_enabled" value="true"
-                 {% if cfg.get('schedule_enabled') == 'true' %}checked{% endif %}
-                 class="w-4 h-4 rounded accent-blue">
-          <span class="text-sm text-text">Otomatik çalışmayı etkinleştir</span>
-        </label>
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-subtext0">Her</span>
-          <input type="number" name="schedule_interval_hours" value="{{ cfg.get('schedule_interval_hours','6') }}"
-                 min="1" max="168"
-                 class="w-16 bg-surface0 border border-surface1 text-text rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-blue">
-          <span class="text-xs text-subtext0">saatte bir</span>
+
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" name="schedule_enabled" value="true"
+               {% if cfg.get('schedule_enabled') == 'true' %}checked{% endif %}
+               class="w-4 h-4 rounded accent-blue">
+        <span class="text-sm text-text">Otomatik çalışmayı etkinleştir</span>
+      </label>
+
+      <div class="space-y-3">
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="schedule_mode" value="interval" id="mode-interval"
+                   onchange="updateScheduleMode()"
+                   {% if cfg.get('schedule_mode','interval') != 'daily' %}checked{% endif %}
+                   class="w-4 h-4 accent-blue">
+            <span class="text-sm text-text">Belirli aralıklarla çalışsın</span>
+          </label>
+          <div id="interval-fields" class="flex items-center gap-2 ml-6 mt-2">
+            <span class="text-xs text-subtext0">Her</span>
+            <input type="number" name="schedule_interval_hours" value="{{ cfg.get('schedule_interval_hours','6') }}"
+                   min="1" max="168"
+                   class="w-16 bg-surface0 border border-surface1 text-text rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-blue">
+            <span class="text-xs text-subtext0">saatte bir</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="schedule_mode" value="daily" id="mode-daily"
+                   onchange="updateScheduleMode()"
+                   {% if cfg.get('schedule_mode') == 'daily' %}checked{% endif %}
+                   class="w-4 h-4 accent-blue">
+            <span class="text-sm text-text">Her gün belirli bir saatte çalışsın</span>
+          </label>
+          <div id="daily-fields" class="flex items-center gap-2 ml-6 mt-2">
+            <input type="time" name="schedule_time" value="{{ cfg.get('schedule_time','09:00') }}"
+                   class="bg-surface0 border border-surface1 text-text rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-blue">
+            <span class="text-xs text-subtext0">(Türkiye saati)</span>
+          </div>
         </div>
       </div>
     </section>
+
+    <script>
+      function updateScheduleMode() {
+        const daily = document.getElementById('mode-daily').checked;
+        document.getElementById('interval-fields').style.display = daily ? 'none' : 'flex';
+        document.getElementById('daily-fields').style.display = daily ? 'flex' : 'none';
+      }
+      updateScheduleMode();
+    </script>
 
     <div class="flex gap-3">
       <button type="submit"

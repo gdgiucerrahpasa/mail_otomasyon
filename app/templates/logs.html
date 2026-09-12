@@ -44,17 +44,19 @@
   <div class="bg-mantle rounded-xl overflow-hidden shadow-sm border border-surface1">
     <div class="font-mono text-xs divide-y divide-surface0">
       {% for entry in entries %}
-      <div class="flex gap-4 px-5 py-2 hover:bg-surface0 transition
+      <div class="flex flex-col sm:flex-row gap-1 sm:gap-4 px-5 py-2 hover:bg-surface0 transition
         {% if entry.level == 'ERROR' %}log-err
         {% elif entry.level == 'WARNING' %}log-warn
         {% else %}log-info{% endif %}">
-        <span class="text-overlay0 shrink-0 w-32">{{ (entry.timestamp | tr_dt).strftime('%d.%m %H:%M:%S') }}</span>
-        <span class="shrink-0 w-20">
-          {% if entry.run_id %}
-          <a href="/logs?run_id={{ entry.run_id }}" class="hover:underline">#{{ entry.run_id }}</a>
-          {% endif %}
+        <span class="flex gap-4 sm:contents">
+          <span class="text-overlay0 shrink-0 sm:w-32">{{ (entry.timestamp | tr_dt).strftime('%d.%m %H:%M:%S') }}</span>
+          <span class="shrink-0 sm:w-20">
+            {% if entry.run_id %}
+            <a href="/logs?run_id={{ entry.run_id }}" class="hover:underline">#{{ entry.run_id }}</a>
+            {% endif %}
+          </span>
+          <span class="shrink-0 sm:w-16">{{ entry.level }}</span>
         </span>
-        <span class="shrink-0 w-16">{{ entry.level }}</span>
         <span class="flex-1 whitespace-pre-wrap break-words">{{ entry.message }}</span>
       </div>
       {% else %}
